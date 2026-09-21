@@ -1,0 +1,36 @@
+{
+  "name": "rpg",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "qa": "npm run typecheck && npm run lint && npm test"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "3.1.1",
+    "expo": "57.0.24",
+    "expo-haptics": "57.0.3",
+    "expo-status-bar": "~57.0.0",
+    "react": "19.3.0",
+    "react-native": "0.87.1",
+    "react-native-safe-area-context": "5.10.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.3.0",
+    "eslint": "^9.0.0",
+    "jest": "^30.0.0",
+    "prettier": "^3.3.0",
+    "ts-jest": "^29.4.0",
+    "typescript": "~5.9.2",
+    "@typescript-eslint/parser": "^8.0.0"
+  }
+}
