@@ -80,4 +80,19 @@ describe('fluxo do aplicativo', () => {
     await waitFor(() => expect(screen.getByText('Regiões conhecidas')).toBeTruthy());
     expect(screen.getByText('Viajar a partir daqui')).toBeTruthy();
   }, 40000);
+
+  it('Aventura dentro da cidade leva ao mapa em vez de gerar combate', async () => {
+    await render(<App />);
+    await waitFor(() => expect(screen.getByText('fantasia medieval · single player')).toBeTruthy(), { timeout: 5000 });
+    await press('Novo jogo');
+    await press('Criar herói');
+    await act(async () => {
+      fireEvent.changeText(screen.getByLabelText('Nome do herói'), 'Edrin');
+    });
+    await press('Começar a jornada');
+    await waitFor(() => expect(screen.getByText('Edrin')).toBeTruthy(), { timeout: 15000 });
+
+    await press('Aventura');
+    await waitFor(() => expect(screen.getByText('Viajar a partir daqui')).toBeTruthy());
+  }, 40000);
 });

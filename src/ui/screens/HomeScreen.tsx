@@ -41,13 +41,20 @@ export function HomeScreen() {
 
   const actions: GridAction[] = [
     {
+      // Encounters belong to the wild; inside walls this opens the map instead.
       id: 'adventure', label: 'Aventura', icon: '✦', highlighted: true,
       onPress: () => {
+        if (location.kind !== 'wilderness') {
+          setNotice(`${location.name} está protegida. Saia pelas estradas para encontrar perigo.`);
+          push('worldMap');
+          return;
+        }
+        let started = false;
         mutate((draft) => {
-          const combat = startRandomEncounter(draft, bus);
-          if (!combat) setNotice('Nada acontece por aqui agora.');
+          started = startRandomEncounter(draft, bus) !== null;
         }, ['player', 'world']);
-        push('combat');
+        if (started) push('combat');
+        else setNotice('Nada se move por aqui agora.');
       },
     },
     { id: 'character', label: 'Personagem', icon: '☗', onPress: () => push('character') },

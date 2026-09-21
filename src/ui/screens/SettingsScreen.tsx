@@ -1,4 +1,4 @@
-import { Switch, View } from 'react-native';
+import { Pressable, Switch, View } from 'react-native';
 import { AppText } from '@/ui/components/Text';
 import { Card } from '@/ui/components/Card';
 import { Screen } from '@/ui/components/Screen';
@@ -10,6 +10,9 @@ import { useGame } from '@/shell/GameProvider';
 import { setHapticsEnabled } from '@/ui/components/haptics';
 
 const SCALES = [0.9, 1, 1.15, 1.3];
+
+/** In a release build the dev panel hides behind a long press on the version. */
+const isDevBuild = typeof __DEV__ !== 'undefined' ? __DEV__ : false;
 
 function Row({ label, description, value, onChange }: { label: string; description: string; value: boolean; onChange: (next: boolean) => void }) {
   return (
@@ -94,7 +97,21 @@ export function SettingsScreen() {
       </Card>
 
       <Button label="Saves" variant="ghost" fullWidth onPress={() => push('saveLoad')} />
-      <Button label="Ferramentas de desenvolvimento" variant="ghost" fullWidth onPress={() => push('devPanel')} />
+
+      {/* Hidden panel: only reachable in development builds, never in a release. */}
+      {isDevBuild ? (
+        <Button label="Ferramentas de desenvolvimento" variant="ghost" fullWidth onPress={() => push('devPanel')} />
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Versão"
+          onLongPress={() => push('devPanel')}
+          delayLongPress={1500}
+          style={{ paddingVertical: spacing.md, alignItems: 'center' }}
+        >
+          <AppText variant="caption" color={colors.textMuted}>RPG · versão 0.1.0</AppText>
+        </Pressable>
+      )}
     </Screen>
   );
 }
