@@ -49,8 +49,10 @@ Animações de barra/level up/loot reveal/equip/dano/crítico, estados vazio,
 carregando e erro, acessibilidade, redução de animações.
 
 ## Fase 12 — QA ✅
-`npm run qa`: typecheck + lint + testes (RNG, XP, loot, save/load, migrations,
-world/quest/dungeon generation, memória, relacionamentos, combate, determinismo).
+`npm run qa`: typecheck + lint + 136 testes em 12 suítes e 2 projetos Jest
+(domínio headless e UI com render real), incluindo o teste de aceitação dos
+25 critérios e dois fluxos ponta a ponta do aplicativo. Bundle Android
+verificado com `expo export`.
 
 ---
 

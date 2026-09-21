@@ -35,13 +35,27 @@ Justificativa segundo os critérios do item 48 do prompt mestre:
 Flutter seria igualmente defensável, mas o SDK não existe neste ambiente: não seria
 possível compilar, testar nem validar nada — o prompt exige execução, não promessas.
 
-### Dependências
+### Dependências e pinos
 
 Mínimas e justificadas: `expo`, `react-native`, `react-native-safe-area-context`
-(notch/safe areas), `expo-haptics` (feedback tátil), `@react-native-async-storage/async-storage`
-(persistência local). Navegação é própria (`src/app/navigation.tsx`) — um stack
-leve de ~120 linhas evita o peso e a rotatividade de versões do react-navigation
-para um app de tela única por vez.
+(notch/safe areas), `expo-haptics` (feedback tátil), `expo-modules-core`,
+`@react-native-async-storage/async-storage` (persistência local).
+
+Navegação é própria (`src/shell/navigation.tsx`) — um stack leve de ~120 linhas
+evita o peso e a rotatividade de versões do react-navigation para um app que
+mostra uma tela por vez.
+
+**React Native está pinado em 0.86.3, não no mais recente (0.87).** O
+`@expo/metro-config` do SDK 57 ainda exige `react-native/rn-get-polyfills`, que
+a 0.87 removeu; com a 0.87 o bundle falha ao resolver os polyfills. O pino foi
+verificado com `npx expo export --platform android` (699 módulos, 1.9 MB de
+bytecode Hermes). A API de compatibilidade da Expo (`api.expo.dev`) está
+bloqueada pelo proxy deste ambiente, então `expo install` não pôde resolver as
+versões automaticamente — o par foi determinado e validado manualmente.
+
+A pasta do shell chama-se `src/shell/`, **não** `src/app/`: o Expo Router trata
+`src/app/` como raiz de rotas por convenção e passava a disputar o controle da
+navegação com o roteador próprio.
 
 ## 3. Camadas
 
@@ -57,11 +71,12 @@ src/
 ├── assets/        AssetCatalog + providers (retratos, locais, ícones, criaturas)
 ├── design/        design tokens e tema
 ├── ui/            components/ e screens/ — apresentação apenas
-└── app/           App, navegação, GameProvider (ponte entre UI e domínio)
+├── game/          serviços que costuram os sistemas (novo jogo, viagem, quests…)
+└── shell/         App, navegação, GameProvider, telemetria de debug
 ```
 
 **Regra de dependência:** as setas apontam sempre para dentro.
-`ui` → `app` → `sim`/`narrative`/`procgen` → `domain` → `core`.
+`ui` → `shell` → `game` → `sim`/`narrative`/`procgen` → `domain` → `core`.
 `core` e `domain` não importam React nem React Native. Nenhuma regra de jogo vive
 dentro de um componente de UI.
 
@@ -97,6 +112,17 @@ determinístico) é a implementação padrão e o jogo funciona 100% com ela.
 
 ## 8. Qualidade
 
-`npm run qa` = `typecheck` + `lint` + `test`. Os testes cobrem RNG, XP/level,
-loot, geração de mundo/quest/dungeon, memória, relacionamentos, combate,
-save/load e migrations, incluindo asserções de determinismo por seed.
+`npm run qa` = `typecheck` + `lint` + `test`.
+
+Os testes rodam em **dois projetos Jest**:
+
+| Projeto | Ambiente | O que cobre |
+| --- | --- | --- |
+| `domain` | Node puro, sem módulos nativos | RNG e determinismo, XP/level/skills, loot, geração de mundo/quest/dungeon/encontro, memória e consolidação, relacionamentos, rumores, combate, economia, save/load, migrations e validação |
+| `ui` | `jest-expo` + React Test Renderer | Componentes renderizam de fato, e dois fluxos ponta a ponta que sobem o `App` real: splash → menu → novo jogo → criação → home, e a navegação entre Home, Personagem, Inventário e Mapa |
+
+O teste `src/game/acceptance.test.ts` percorre os 25 critérios de aceitação do
+prompt numa única partida headless, incluindo o ciclo fechar/reabrir o save.
+
+Compilar não é o mesmo que rodar: além dos testes, o bundle Android é verificado
+com `npx expo export --platform android`.
