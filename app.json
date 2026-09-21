@@ -14,11 +14,15 @@
       "resizeMode": "contain",
       "backgroundColor": "#0B0B0F"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.rpg.game",
-      "infoPlist": { "UIRequiresFullScreen": true }
+      "infoPlist": {
+        "UIRequiresFullScreen": true
+      }
     },
     "android": {
       "package": "com.rpg.game",
@@ -28,7 +32,8 @@
       },
       "edgeToEdgeEnabled": true
     },
-    "plugins": ["expo-haptics"],
-    "extra": { "buildProfile": "development" }
+    "extra": {
+      "buildProfile": "development"
+    }
   }
 }
