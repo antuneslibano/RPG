@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 // AsyncStorage has no native module under Jest, so back it with an in-memory map.
 jest.mock('@react-native-async-storage/async-storage', () => {
   const store = new Map();

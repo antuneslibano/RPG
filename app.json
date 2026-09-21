@@ -29,8 +29,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B0B0F"
-      },
-      "edgeToEdgeEnabled": true
+      }
     },
     "extra": {
       "buildProfile": "development"

@@ -29,6 +29,36 @@ Os testes de domínio rodam headless em Node; os de UI sobem o aplicativo real e
 navegam por ele. O bundle nativo é verificado com
 `npx expo export --platform android`.
 
+## Gerar o APK
+
+O `android/` não é versionado: o Expo o regenera a partir do `app.json`.
+
+**Pelo GitHub Actions (não precisa instalar nada):**
+Actions → **APK Android** → *Run workflow*. Ao terminar, baixe em
+**Artifacts → RPG-apk**. No celular, permita "instalar apps de fontes
+desconhecidas" e abra o arquivo.
+
+Por padrão cada build usa uma chave de assinatura efêmera — o APK instala
+normalmente, mas atualizar por cima exige desinstalar a versão anterior. Para
+uma chave estável, gere uma e cadastre como secrets do repositório:
+
+```bash
+keytool -genkeypair -v -keystore rpg.keystore -alias rpg \
+  -keyalg RSA -keysize 2048 -validity 10000
+base64 -w0 rpg.keystore     # valor de ANDROID_KEYSTORE_BASE64
+```
+
+Secrets: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`,
+`ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
+
+**Localmente** (requer Android SDK e `ANDROID_HOME` configurados):
+
+```bash
+npx expo prebuild --platform android --no-install
+cd android && ./gradlew :app:assembleRelease
+# APK em android/app/build/outputs/apk/release/
+```
+
 ## Documentação
 
 | Arquivo | Conteúdo |
