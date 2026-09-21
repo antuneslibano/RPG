@@ -97,25 +97,36 @@ jobs:
       - name: Injetar configuração de assinatura
         run: node scripts/configure-android-signing.mjs
 
-      - name: Compilar APK de release
+      # Duas variantes: arm64 cobre praticamente todo celular atual e é bem
+      # menor de baixar; a universal fica como garantia para aparelhos antigos
+      # (armeabi-v7a) e emuladores x86.
+      - name: Compilar APK arm64
+        working-directory: android
+        run: ./gradlew :app:assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
+
+      - name: Guardar APK arm64
+        run: cp "$(find android/app/build/outputs/apk/release -name '*.apk' | head -1)" RPG-arm64.apk
+
+      - name: Compilar APK universal
         working-directory: android
         run: ./gradlew :app:assembleRelease --no-daemon
 
-      - name: Renomear APK
+      - name: Guardar APK universal
         id: apk
         run: |
           set -euo pipefail
-          SRC=$(find android/app/build/outputs/apk/release -name '*.apk' | head -1)
-          DEST="RPG-${GITHUB_SHA::7}.apk"
-          cp "$SRC" "$DEST"
-          echo "path=$DEST" >> "$GITHUB_OUTPUT"
-          echo "size=$(du -h "$DEST" | cut -f1)" >> "$GITHUB_OUTPUT"
+          cp "$(find android/app/build/outputs/apk/release -name '*.apk' | head -1)" RPG.apk
+          echo "path=RPG.apk" >> "$GITHUB_OUTPUT"
+          echo "size=$(du -h RPG.apk | cut -f1)" >> "$GITHUB_OUTPUT"
+          echo "size_arm64=$(du -h RPG-arm64.apk | cut -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Publicar APK como artefato
         uses: actions/upload-artifact@v4
         with:
           name: RPG-apk
-          path: ${{ steps.apk.outputs.path }}
+          path: |
+            RPG.apk
+            RPG-arm64.apk
           retention-days: 30
           if-no-files-found: error
 
@@ -126,18 +137,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          cp "${{ steps.apk.outputs.path }}" RPG.apk
           NOTES="Build automática de \`${GITHUB_REF_NAME}\` (\`${GITHUB_SHA::7}\`).
 
-          **Instalar:** baixe \`RPG.apk\` abaixo pelo navegador do celular, permita
-          \"instalar apps de fontes desconhecidas\" quando o Android pedir, e abra o arquivo.
+          | Arquivo | Para quem | Tamanho |
+          | --- | --- | --- |
+          | \`RPG-arm64.apk\` | praticamente todo celular atual — **comece por este** | ${{ steps.apk.outputs.size_arm64 }} |
+          | \`RPG.apk\` | universal: aparelhos antigos (armeabi-v7a) e emuladores x86 | ${{ steps.apk.outputs.size }} |
 
-          Este link sempre aponta para a build mais recente."
+          **Instalar:** baixe pelo navegador do celular, permita \"instalar apps de
+          fontes desconhecidas\" quando o Android pedir, e abra o arquivo.
+
+          Estes links sempre apontam para a build mais recente."
           if gh release view apk-latest >/dev/null 2>&1; then
             gh release edit apk-latest --notes "$NOTES"
-            gh release upload apk-latest RPG.apk --clobber
+            gh release upload apk-latest RPG.apk RPG-arm64.apk --clobber
           else
-            gh release create apk-latest RPG.apk \
+            gh release create apk-latest RPG.apk RPG-arm64.apk \
               --title "RPG — APK mais recente" \
               --notes "$NOTES"
           fi
@@ -148,7 +163,8 @@ jobs:
           {
             echo "## APK pronto"
             echo ""
-            echo "- Arquivo: \`${{ steps.apk.outputs.path }}\` (${{ steps.apk.outputs.size }})"
+            echo "- \`RPG-arm64.apk\` (${{ steps.apk.outputs.size_arm64 }}) — recomendado"
+            echo "- \`RPG.apk\` universal (${{ steps.apk.outputs.size }})"
             echo "- **Link direto:** $APK_URL"
             echo "- Ou baixe em **Artifacts → RPG-apk** no topo desta página."
             echo "- No celular: permita \"instalar apps de fontes desconhecidas\" e abra o APK."

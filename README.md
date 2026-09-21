@@ -33,9 +33,12 @@ navegam por ele. O bundle nativo é verificado com
 
 O `android/` não é versionado: o Expo o regenera a partir do `app.json`.
 
-**Baixar direto no celular** (link fixo, sempre a build mais recente):
+**Baixar direto no celular** (links fixos, sempre a build mais recente):
 
-<https://github.com/antuneslibano/RPG/releases/download/apk-latest/RPG.apk>
+| Arquivo | Para quem |
+| --- | --- |
+| [RPG-arm64.apk](https://github.com/antuneslibano/RPG/releases/download/apk-latest/RPG-arm64.apk) | praticamente todo celular atual — comece por este |
+| [RPG.apk](https://github.com/antuneslibano/RPG/releases/download/apk-latest/RPG.apk) | universal: aparelhos antigos (armeabi-v7a) e emuladores x86 |
 
 Permita "instalar apps de fontes desconhecidas" quando o Android pedir e abra
 o arquivo baixado.
