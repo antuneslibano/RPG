@@ -33,10 +33,16 @@ navegam por ele. O bundle nativo é verificado com
 
 O `android/` não é versionado: o Expo o regenera a partir do `app.json`.
 
-**Pelo GitHub Actions (não precisa instalar nada):**
-Actions → **APK Android** → *Run workflow*. Ao terminar, baixe em
-**Artifacts → RPG-apk**. No celular, permita "instalar apps de fontes
-desconhecidas" e abra o arquivo.
+**Baixar direto no celular** (link fixo, sempre a build mais recente):
+
+<https://github.com/antuneslibano/RPG/releases/download/apk-latest/RPG.apk>
+
+Permita "instalar apps de fontes desconhecidas" quando o Android pedir e abra
+o arquivo baixado.
+
+**Gerar uma build nova:** Actions → **APK Android** → *Run workflow*. Cada push
+também dispara o build, que atualiza o link acima e anexa o APK ao run em
+*Artifacts → RPG-apk*.
 
 Por padrão cada build usa uma chave de assinatura efêmera — o APK instala
 normalmente, mas atualizar por cima exige desinstalar a versão anterior. Para

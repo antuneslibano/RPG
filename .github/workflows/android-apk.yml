@@ -7,6 +7,9 @@ on:
   push:
     branches: [main, master, 'claude/**']
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build release APK
@@ -108,7 +111,7 @@ jobs:
           echo "path=$DEST" >> "$GITHUB_OUTPUT"
           echo "size=$(du -h "$DEST" | cut -f1)" >> "$GITHUB_OUTPUT"
 
-      - name: Publicar APK
+      - name: Publicar APK como artefato
         uses: actions/upload-artifact@v4
         with:
           name: RPG-apk
@@ -116,13 +119,38 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
+      # O artefato do Actions vem zipado e exige login — ruim para instalar pelo
+      # celular. O release dá um link .apk direto e estável, sempre na última build.
+      - name: Publicar release com link direto
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cp "${{ steps.apk.outputs.path }}" RPG.apk
+          NOTES="Build automática de \`${GITHUB_REF_NAME}\` (\`${GITHUB_SHA::7}\`).
+
+          **Instalar:** baixe \`RPG.apk\` abaixo pelo navegador do celular, permita
+          \"instalar apps de fontes desconhecidas\" quando o Android pedir, e abra o arquivo.
+
+          Este link sempre aponta para a build mais recente."
+          if gh release view apk-latest >/dev/null 2>&1; then
+            gh release edit apk-latest --notes "$NOTES"
+            gh release upload apk-latest RPG.apk --clobber
+          else
+            gh release create apk-latest RPG.apk \
+              --title "RPG — APK mais recente" \
+              --notes "$NOTES"
+          fi
+          echo "APK_URL=https://github.com/${GITHUB_REPOSITORY}/releases/download/apk-latest/RPG.apk" >> "$GITHUB_ENV"
+
       - name: Resumo
         run: |
           {
             echo "## APK pronto"
             echo ""
             echo "- Arquivo: \`${{ steps.apk.outputs.path }}\` (${{ steps.apk.outputs.size }})"
-            echo "- Baixe em **Artifacts → RPG-apk** no topo desta página."
+            echo "- **Link direto:** $APK_URL"
+            echo "- Ou baixe em **Artifacts → RPG-apk** no topo desta página."
             echo "- No celular: permita \"instalar apps de fontes desconhecidas\" e abra o APK."
             if [ "${{ steps.signing.outputs.stable }}" != "true" ]; then
               echo ""
